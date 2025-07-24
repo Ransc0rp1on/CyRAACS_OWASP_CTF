@@ -1,0 +1,560 @@
+<!doctype html>
+<html>
+<head>
+  <title>CyRAACS CTF</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+  <style>
+    :root {
+      --ctf-primary: #0a0a2a;
+      --ctf-secondary: #00ffcc;
+      --ctf-accent: #0066ff;
+      --ctf-danger: #ff4d6d;
+      --ctf-warning: #ffd60a;
+      --ctf-dark-bg: #050517;
+    }
+    
+    body {
+      background: var(--ctf-dark-bg) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23050517"/><path d="M0 50L100 50M50 0L50 100" stroke="%230d0d2e" stroke-width="1"/></svg>');
+      color: #e0e0ff;
+      min-height: 100vh;
+      padding-top: 2rem;
+      font-family: 'Courier New', monospace;
+      position: relative;
+      overflow-x: hidden;
+    }
+    
+    /* Terminal-style scan lines overlay */
+    body::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 255, 204, 0.05),
+        rgba(0, 255, 204, 0.05) 1px,
+        transparent 1px,
+        transparent 4px
+      );
+      pointer-events: none;
+      z-index: 100;
+    }
+    
+    .ctf-container {
+      max-width: 700px;
+      background: rgba(10, 15, 30, 0.85);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      border: 1px solid rgba(0, 255, 204, 0.2);
+      box-shadow: 0 0 30px rgba(0, 102, 255, 0.3);
+      overflow: hidden;
+      position: relative;
+      z-index: 10;
+    }
+    
+    .ctf-header {
+      background: linear-gradient(to right, #0a1430, #0a1a40);
+      border-bottom: 1px solid var(--ctf-secondary);
+      padding: 1.5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .ctf-header::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(to right, #00ffcc, #0066ff, #00ffcc);
+      animation: scanline 3s linear infinite;
+    }
+    
+    .ctf-title {
+      color: var(--ctf-secondary);
+      text-shadow: 0 0 15px rgba(0, 255, 204, 0.7);
+      font-weight: 700;
+      letter-spacing: 1px;
+      font-family: 'Courier New', monospace;
+      position: relative;
+    }
+    
+    .ctf-title::after {
+      content: "|";
+      animation: blink 1s infinite step-end;
+      margin-left: 2px;
+      color: var(--ctf-secondary);
+    }
+    
+    .ctf-body {
+      padding: 2rem;
+      position: relative;
+    }
+    
+    .upload-box {
+      border: 2px dashed rgba(0, 255, 204, 0.3);
+      border-radius: 10px;
+      padding: 2rem;
+      text-align: center;
+      background: rgba(0, 10, 25, 0.5);
+      transition: all 0.3s;
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .upload-box:hover {
+      border-color: var(--ctf-accent);
+      background: rgba(0, 30, 60, 0.5);
+      box-shadow: 0 0 20px rgba(0, 102, 255, 0.2);
+    }
+    
+    .upload-box::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(to right, transparent, var(--ctf-accent), transparent);
+      animation: progress 3s linear infinite;
+    }
+    
+    .ctf-btn {
+      background: linear-gradient(to right, #0066ff, #00ccff);
+      border: none;
+      border-radius: 50px;
+      padding: 10px 25px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      transition: all 0.3s;
+      margin-top: 1rem;
+      position: relative;
+      overflow: hidden;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .ctf-btn::after {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -60%;
+      width: 20px;
+      height: 200%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: rotate(25deg);
+      transition: all 0.7s;
+    }
+    
+    .ctf-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 102, 255, 0.4);
+    }
+    
+    .ctf-btn:hover::after {
+      left: 120%;
+    }
+    
+    .hint-box {
+      background: rgba(0, 30, 60, 0.6);
+      border-left: 3px solid var(--ctf-accent);
+      padding: 1rem;
+      border-radius: 0 5px 5px 0;
+      margin-top: 2rem;
+      font-size: 0.9rem;
+      position: relative;
+    }
+    
+    .hint-box::before {
+      content: "HINTS";
+      position: absolute;
+      top: -12px;
+      left: 20px;
+      background: var(--ctf-dark-bg);
+      padding: 0 10px;
+      font-size: 0.8rem;
+      color: var(--ctf-secondary);
+      letter-spacing: 1px;
+    }
+    
+    /* Security scanner animation */
+    .scanner {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(to right, transparent, var(--ctf-secondary), transparent);
+      animation: scanner 3s linear infinite;
+      opacity: 0.7;
+      z-index: 5;
+    }
+    
+    /* Custom Modal Styles */
+    .ctf-modal {
+      background: rgba(10, 15, 30, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--ctf-secondary);
+      border-radius: 15px;
+      box-shadow: 0 0 30px rgba(0, 255, 204, 0.3);
+      font-family: 'Courier New', monospace;
+    }
+    
+    .ctf-modal-header {
+      border-bottom: 1px solid rgba(0, 255, 204, 0.3);
+      background: rgba(0, 20, 40, 0.9);
+    }
+    
+    .ctf-modal-title {
+      color: var(--ctf-secondary);
+      text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+    }
+    
+    .ctf-modal-body {
+      padding: 2rem;
+      text-align: center;
+      font-size: 1.1rem;
+      background: rgba(5, 10, 20, 0.7);
+    }
+    
+    .ctf-modal-footer {
+      border-top: 1px solid rgba(0, 255, 204, 0.3);
+      justify-content: center;
+      background: rgba(0, 20, 40, 0.9);
+    }
+    
+    .modal-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      text-shadow: 0 0 15px currentColor;
+    }
+    
+    .danger-icon {
+      color: var(--ctf-danger);
+    }
+    
+    .warning-icon {
+      color: var(--ctf-warning);
+    }
+    
+    .success-icon {
+      color: var(--ctf-secondary);
+    }
+    
+    .ctf-modal-btn {
+      background: rgba(0, 102, 255, 0.3);
+      border: 1px solid var(--ctf-accent);
+      color: white;
+      border-radius: 50px;
+      padding: 8px 25px;
+      transition: all 0.3s;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .ctf-modal-btn:hover {
+      background: rgba(0, 102, 255, 0.5);
+      transform: translateY(-2px);
+      box-shadow: 0 0 15px rgba(0, 102, 255, 0.4);
+    }
+    
+    .file-preview {
+      margin-top: 1.5rem;
+      border: 1px solid rgba(0, 255, 204, 0.2);
+      border-radius: 8px;
+      padding: 10px;
+      background: rgba(0, 15, 30, 0.4);
+      min-height: 150px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+    
+    .file-preview img {
+      max-width: 100%;
+      max-height: 200px;
+      border: 1px solid rgba(0, 255, 204, 0.1);
+      border-radius: 4px;
+    }
+    
+    .hex-view {
+      font-family: monospace;
+      font-size: 0.7rem;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 10px;
+      border-radius: 4px;
+      max-height: 150px;
+      overflow: auto;
+      width: 100%;
+      margin-top: 10px;
+      display: none;
+    }
+    
+    .security-badge {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(0, 40, 80, 0.7);
+      border: 1px solid var(--ctf-accent);
+      border-radius: 4px;
+      padding: 3px 8px;
+      font-size: 0.7rem;
+      color: var(--ctf-secondary);
+    }
+    
+    /* Animations */
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+    
+    @keyframes scanline {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    
+    @keyframes progress {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    
+    @keyframes scanner {
+      0% { top: 0; }
+      100% { top: 100%; }
+    }
+    
+    .typewriter {
+      overflow: hidden;
+      white-space: nowrap;
+      margin: 0 auto;
+      letter-spacing: .15em;
+      animation: typing 3.5s steps(40, end);
+    }
+    
+    @keyframes typing {
+      from { width: 0 }
+      to { width: 100% }
+    }
+  </style>
+</head>
+<body>
+  <div class="scanner"></div>
+  
+  <div class="container ctf-container">
+    <div class="security-badge">
+      <i class="bi bi-shield-lock"></i> SECURE UPLOAD
+    </div>
+    
+    <div class="ctf-header">
+      <h1 class="ctf-title"><i class="bi bi-file-earmark-binary"></i> CYRAACS SECURE FILE VALIDATOR</h1>
+      <p class="mb-0">V1.3.7 - OWASP COMPLIANT FILE SCANNER</p>
+    </div>
+    
+    <div class="ctf-body">
+      <div class="upload-box">
+        <i class="bi bi-filetype-png" style="font-size: 3rem; color: #5599ff;"></i>
+        <h4>UPLOAD PNG FOR SECURITY VALIDATION</h4>
+        <p class="text-muted">MAX SIZE: 5MB | VALID SIGNATURES ONLY</p>
+        
+        <form method="POST" enctype="multipart/form-data" id="uploadForm">
+          <input class="form-control mb-3" type="file" name="file" accept=".png" id="fileInput">
+          <button type="submit" class="btn ctf-btn">
+            <i class="bi bi-shield-check"></i> INITIATE SCAN
+          </button>
+        </form>
+      </div>
+      
+      <div class="file-preview">
+        <div id="emptyPreview">
+          <i class="bi bi-file-earmark-image" style="font-size: 2rem; opacity: 0.5;"></i>
+          <p class="mt-2 mb-0">PNG PREVIEW WILL APPEAR HERE</p>
+        </div>
+        <img id="imagePreview" class="img-fluid" style="display: none;">
+        <div id="hexPreview" class="hex-view"></div>
+      </div>
+      
+      <div class="hint-box mt-4">
+        <h5><i class="bi bi-lightbulb"></i> SECURITY NOTICE</h5>
+        <ul>
+          <li>All files undergo deep content inspection</li>
+          <li>Signature validation includes header verification</li>
+          <li>Metadata analysis performed for hidden content</li>
+          <li>Server uses libpng-1.6.39 with custom patches</li>
+        </ul>
+        
+        <div class="mt-2 p-2" style="background: rgba(0, 20, 40, 0.5); border-radius: 4px;">
+          <small class="text-warning">
+            <i class="bi bi-exclamation-triangle"></i> DEBUG: Last validation failed on signature check (offset 0x24)
+          </small>
+        </div>
+      </div>
+      
+      <div class="mt-4 p-3" style="background: rgba(0, 20, 40, 0.3); border-radius: 8px; border: 1px solid rgba(255, 0, 0, 0.1);">
+        <div class="d-flex align-items-center">
+          <i class="bi bi-cpu" style="font-size: 1.5rem; margin-right: 10px; color: var(--ctf-accent);"></i>
+          <div>
+            <h6 class="mb-0">SYSTEM STATUS</h6>
+            <small>Validator: ONLINE | Threat DB: v2024.07</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <footer class="mt-4 text-center text-muted">
+    <p>CyRAACS Threat Analysis Platform © 2024 | OWASP Top 10 Compliant</p>
+  </footer>
+  
+  <!-- Error Modal -->
+  <div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content ctf-modal">
+        <div class="modal-header ctf-modal-header">
+          <h5 class="modal-title ctf-modal-title" id="modalTitle"></h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body ctf-modal-body">
+          <div class="modal-icon" id="modalIcon"></div>
+          <p id="modalMessage"></p>
+          <div id="modalDebug" class="mt-3 p-2 bg-dark text-monospace small" style="display:none;"></div>
+        </div>
+        <div class="modal-footer ctf-modal-footer">
+          <button type="button" class="btn ctf-modal-btn" data-bs-dismiss="modal">
+            <i class="bi bi-check-circle"></i> ACKNOWLEDGE
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // File preview handling
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      const preview = document.getElementById('imagePreview');
+      const hexPreview = document.getElementById('hexPreview');
+      const emptyPreview = document.getElementById('emptyPreview');
+      
+      // Hide empty preview
+      emptyPreview.style.display = 'none';
+      
+      // Show image if it's a valid image
+      if (file.type.match('image.*')) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          preview.src = e.target.result;
+          preview.style.display = 'block';
+          hexPreview.style.display = 'none';
+        }
+        reader.readAsDataURL(file);
+      } else {
+        // Show hex preview for non-image files
+        preview.style.display = 'none';
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const buffer = new Uint8Array(e.target.result);
+          let hexOutput = '';
+          const chunkSize = 16;
+          
+          for (let i = 0; i < Math.min(buffer.length, 256); i += chunkSize) {
+            // Hex values
+            let hexLine = '';
+            for (let j = 0; j < Math.min(chunkSize, buffer.length - i); j++) {
+              const byte = buffer[i + j].toString(16).padStart(2, '0');
+              hexLine += byte + ' ';
+            }
+            hexLine = hexLine.padEnd(47, ' ');
+            
+            // ASCII representation
+            let asciiLine = '';
+            for (let j = 0; j < Math.min(chunkSize, buffer.length - i); j++) {
+              const charCode = buffer[i + j];
+              asciiLine += (charCode >= 32 && charCode <= 126) ? 
+                String.fromCharCode(charCode) : '.';
+            }
+            
+            hexOutput += `<div class="d-flex"><small class="text-muted me-3">${i.toString(16).padStart(4, '0')}</small>` +
+                         `<code class="me-3">${hexLine}</code>` +
+                         `<code>${asciiLine}</code></div>`;
+          }
+          
+          hexPreview.innerHTML = hexOutput;
+          hexPreview.style.display = 'block';
+        }
+        reader.readAsArrayBuffer(file.slice(0, 256)); // Only read first 256 bytes
+      }
+    });
+
+    // Handle flash messages as modals
+    document.addEventListener('DOMContentLoaded', function() {
+      const flashData = {
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            messages: [
+              {% for category, message in messages %}
+                {
+                  category: "{{ category }}",
+                  message: "{{ message }}"
+                },
+              {% endfor %}
+            ]
+          {% else %}
+            messages: []
+          {% endif %}
+        {% endwith %}
+      };
+      
+      if (flashData.messages.length > 0) {
+        const lastMessage = flashData.messages[flashData.messages.length - 1];
+        const modal = new bootstrap.Modal(document.getElementById('errorModal'));
+        const modalTitle = document.getElementById('modalTitle');
+        const modalIcon = document.getElementById('modalIcon');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalDebug = document.getElementById('modalDebug');
+        
+        // Set modal content based on message category
+        if (lastMessage.category === 'danger') {
+          modalTitle.textContent = 'SECURITY VALIDATION FAILED';
+          modalIcon.className = 'modal-icon danger-icon bi bi-exclamation-triangle-fill';
+          modalMessage.innerHTML = lastMessage.message;
+          
+          // Add debug info for validation errors
+          modalDebug.style.display = 'block';
+          modalDebug.innerHTML = 
+            `> Validation error at offset 0x89\n` +
+            `> Detected invalid chunk type: "pHp5"\n` +
+            `> Security level: CRITICAL\n` +
+            `> Action: File rejected and logged`;
+        } else if (lastMessage.category === 'warning') {
+          modalTitle.textContent = 'SECURITY WARNING';
+          modalIcon.className = 'modal-icon warning-icon bi bi-exclamation-circle-fill';
+          modalMessage.innerHTML = lastMessage.message;
+        }
+        
+        // Show modal after a short delay
+        setTimeout(() => modal.show(), 300);
+      }
+    });
+    
+    // Prevent form resubmission on refresh
+    if (window.history.replaceState) {
+      window.history.replaceState(null, null, window.location.href);
+    }
+    
+    // Simulate scanning animation on submit
+    document.getElementById('uploadForm').addEventListener('submit', function() {
+      const btn = this.querySelector('button[type="submit"]');
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> SCANNING...';
+      btn.disabled = true;
+    });
+  </script>
+</body>
+</html>

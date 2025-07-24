@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>CyRAACS - Cryptographic Analysis</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+  <style>
+    :root {
+      --ctf-primary: #0a0a2a;
+      --ctf-secondary: #00ffcc;
+      --ctf-accent: #0066ff;
+      --ctf-danger: #ff4d6d;
+      --ctf-warning: #ffd60a;
+      --ctf-dark-bg: #050517;
+    }
+    
+    body {
+      background: var(--ctf-dark-bg) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23050517"/><path d="M0 50L100 50M50 0L50 100" stroke="%230d0d2e" stroke-width="1"/></svg>');
+      color: #e0e0ff;
+      min-height: 100vh;
+      font-family: 'Courier New', monospace;
+      position: relative;
+    }
+    
+    /* Terminal-style scan lines overlay */
+    body::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 255, 204, 0.05),
+        rgba(0, 255, 204, 0.05) 1px,
+        transparent 1px,
+        transparent 4px
+      );
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    .crypto-container {
+      max-width: 700px;
+      background: rgba(10, 15, 30, 0.9);
+      backdrop-filter: blur(10px);
+      border-radius: 10px;
+      border: 1px solid rgba(0, 255, 204, 0.2);
+      box-shadow: 0 0 30px rgba(0, 102, 255, 0.3);
+      padding: 2rem;
+      margin: 3rem auto;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .crypto-container::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(to right, transparent, var(--ctf-accent), transparent);
+      animation: scanline 3s linear infinite;
+    }
+    
+    .crypto-header {
+      text-align: center;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+    
+    .crypto-title {
+      color: var(--ctf-secondary);
+      text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+      font-weight: bold;
+      letter-spacing: 1px;
+      margin-bottom: 0.5rem;
+    }
+    
+    .crypto-subtitle {
+      color: rgba(200, 200, 255, 0.7);
+      font-size: 0.9rem;
+    }
+    
+    .form-control {
+      background: rgba(0, 10, 25, 0.7) !important;
+      border: 1px solid rgba(0, 255, 204, 0.2) !important;
+      color: white !important;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .form-control:focus {
+      border-color: var(--ctf-accent) !important;
+      box-shadow: 0 0 0 0.25rem rgba(0, 102, 255, 0.25) !important;
+    }
+    
+    .btn-crypto {
+      background: linear-gradient(to right, #0066ff, #00ccff);
+      border: none;
+      border-radius: 5px;
+      padding: 10px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      transition: all 0.3s;
+      width: 100%;
+      font-family: 'Courier New', monospace;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn-crypto:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 102, 255, 0.4);
+    }
+    
+    .btn-crypto::after {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -60%;
+      width: 20px;
+      height: 200%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: rotate(25deg);
+      transition: all 0.7s;
+    }
+    
+    .btn-crypto:hover::after {
+      left: 120%;
+    }
+    
+    .alert {
+      border-radius: 5px;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .alert-danger {
+      background: rgba(255, 77, 109, 0.2);
+      border: 1px solid var(--ctf-danger);
+      color: #ffb8c6;
+    }
+    
+    .alert-info {
+      background: rgba(0, 102, 255, 0.1);
+      border: 1px solid var(--ctf-accent);
+      color: #b3d9ff;
+    }
+    
+    .security-badge {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(0, 40, 80, 0.7);
+      border: 1px solid var(--ctf-accent);
+      border-radius: 4px;
+      padding: 3px 8px;
+      font-size: 0.7rem;
+      color: var(--ctf-secondary);
+    }
+    
+    .crypto-details {
+      font-family: monospace;
+      font-size: 0.8rem;
+      background: rgba(0, 15, 30, 0.5);
+      padding: 10px;
+      border-radius: 4px;
+      margin-top: 1rem;
+      border-left: 3px solid var(--ctf-accent);
+    }
+    
+    .result-box {
+      background: rgba(0, 20, 40, 0.5);
+      border: 1px solid var(--ctf-secondary);
+      border-radius: 5px;
+      padding: 15px;
+      margin-top: 1.5rem;
+    }
+    
+    .result-value {
+      font-family: monospace;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 10px;
+      border-radius: 4px;
+      word-break: break-all;
+      border: 1px dashed var(--ctf-secondary);
+    }
+    
+    @keyframes scanline {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    
+    .attack-info {
+      background: rgba(30, 0, 60, 0.3);
+      border-left: 3px solid var(--ctf-warning);
+      padding: 10px;
+      border-radius: 0 5px 5px 0;
+      margin-top: 1.5rem;
+    }
+    
+    .attack-info::before {
+      content: "CRIME ATTACK VECTOR";
+      display: block;
+      font-size: 0.8rem;
+      color: var(--ctf-warning);
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="crypto-container">
+    <div class="security-badge">
+      <i class="bi bi-file-lock2"></i> CLASSIFIED
+    </div>
+    
+    <div class="crypto-header">
+      <h3 class="crypto-title"><i class="bi bi-file-earmark-lock2"></i> CRYPTOGRAPHIC ANALYSIS TOOL</h3>
+      <p class="crypto-subtitle">v3.2.1 | RC4 + zlib Compression Oracle</p>
+    </div>
+    
+    {% if error %}
+      <div class="alert alert-danger">
+        <i class="bi bi-exclamation-octagon-fill"></i> <strong>PROCESSING ERROR</strong>
+        <div class="crypto-details mt-2">
+          > {{ error }}<br>
+          > SYSTEM: RC4_KEY=0x******** (hidden)<br>
+          > COMPRESSION_LEVEL: 6
+        </div>
+      </div>
+    {% endif %}
+    
+    <form method="GET">
+      <div class="mb-3">
+        <label class="form-label">ENCRYPTED PAYLOAD (Base64)</label>
+        <input type="text"
+               name="data"
+               class="form-control"
+               placeholder="e.g. QzJ1Y1hZWFlaVGhpc0lzQWJsb2I="
+               required
+               value="{{ request.args.get('data','') }}"
+               autocomplete="off"
+               spellcheck="false">
+      </div>
+      <button class="btn btn-crypto">
+        <i class="bi bi-file-earmark-binary"></i> ANALYZE CIPHERTEXT
+      </button>
+    </form>
+    
+    {% if response_length is not none %}
+      <div class="result-box">
+        <h5><i class="bi bi-file-earmark-break"></i> ANALYSIS RESULTS</h5>
+        
+        <div class="mt-3">
+          <strong>Input Payload:</strong>
+          <div class="result-value">{{ request.args.get('data','') }}</div>
+        </div>
+        
+        <div class="mt-3">
+          <strong>Ciphertext Length:</strong>
+          <div class="result-value">{{ response_length }} bytes</div>
+        </div>
+        
+        <div class="crypto-details mt-3">
+          > PROCESS: input → zlib compression → RC4 encryption<br>
+          > RC4_KEY_LENGTH: 16 bytes<br>
+          > IV: None (stream cipher)<br>
+          > COMPRESSION_RATIO: {{ "%.2f"|format(response_length/request.args.get('data','')|length) }}x
+        </div>
+      </div>
+      
+      <div class="attack-info">
+        <p>
+          This endpoint is vulnerable to a CRIME-style attack. The length of the ciphertext
+          varies based on compression efficiency when your input shares common substrings
+          with the appended secret.
+        </p>
+        <p class="mb-0">
+          <strong>Attack strategy:</strong> Systematically test character sequences and
+          observe length reductions to reconstruct the secret.
+        </p>
+      </div>
+      
+      <div class="crypto-details mt-3">
+        > DEBUG: Last successful decryption revealed pattern: /ssrf?url=...<br>
+        > HINT: The secret appears to be a URL-encoded internal endpoint
+      </div>
+    {% endif %}
+    
+    <div class="mt-4 text-center text-muted small">
+      <i class="bi bi-shield-lock"></i> WARNING: This tool processes classified materials. All access is logged.
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Add loading state to submit button
+    document.querySelector('form').addEventListener('submit', function() {
+      const btn = this.querySelector('button');
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> PROCESSING...';
+      btn.disabled = true;
+    });
+    
+    // Simulate processing delay for results
+    setTimeout(() => {
+      const results = document.querySelector('.result-box');
+      if (results) {
+        results.style.display = 'block';
+        results.style.opacity = '0';
+        results.style.transition = 'opacity 0.5s';
+        setTimeout(() => results.style.opacity = '1', 10);
+      }
+    }, 300);
+  </script>
+</body>
+</html>

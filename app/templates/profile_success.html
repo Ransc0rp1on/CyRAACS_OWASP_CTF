@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Elliot Alderson - Developer Profile</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+  <style>
+    :root {
+      --ctf-primary: #0a0a2a;
+      --ctf-secondary: #00ffcc;
+      --ctf-accent: #0066ff;
+      --ctf-danger: #ff3366;
+      --ctf-success: #00cc88;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #0a0a2a 0%, #020212 100%);
+      color: #e0e0ff;
+      min-height: 100vh;
+      padding-top: 2rem;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .profile-container {
+      max-width: 800px;
+      background: rgba(10, 15, 30, 0.85);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      border: 1px solid rgba(0, 255, 204, 0.2);
+      box-shadow: 0 0 30px rgba(0, 102, 255, 0.3);
+      overflow: hidden;
+      margin: 0 auto;
+    }
+    
+    .profile-header {
+      background: rgba(0, 20, 40, 0.9);
+      border-bottom: 1px solid var(--ctf-secondary);
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+    
+    .profile-pic {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3px solid var(--ctf-accent);
+      object-fit: cover;
+      margin-right: 1.5rem;
+    }
+    
+    .terminated-badge {
+      background: var(--ctf-danger);
+      color: white;
+      padding: 0.3rem 1rem;
+      border-radius: 50px;
+      font-size: 0.9rem;
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+    }
+    
+    .profile-content {
+      padding: 2rem;
+    }
+    
+    .profile-section {
+      background: rgba(0, 15, 30, 0.8);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      border-left: 3px solid var(--ctf-accent);
+    }
+    
+    .activity-log {
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 5px;
+      padding: 1rem;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .log-entry {
+      padding: 0.5rem;
+      border-bottom: 1px solid rgba(0, 150, 255, 0.1);
+      display: flex;
+    }
+    
+    .log-timestamp {
+      color: #5599ff;
+      min-width: 90px;
+      font-family: monospace;
+    }
+    
+    .log-message {
+      flex: 1;
+    }
+    
+    .config-file {
+      background: #1e1e1e;
+      color: #dcdcdc;
+      border-radius: 5px;
+      padding: 1rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .line-number {
+      color: #6a9955;
+      display: inline-block;
+      width: 30px;
+      text-align: right;
+      margin-right: 10px;
+      user-select: none;
+    }
+    
+    .token-line {
+      background: rgba(0, 50, 100, 0.5);
+      position: relative;
+    }
+    
+    .token-value {
+      color: rgba(255, 255, 255, 0.3);
+      transition: all 0.3s;
+    }
+    
+    .token-value:hover {
+      color: var(--ctf-success);
+      text-shadow: 0 0 10px rgba(0, 255, 170, 0.7);
+    }
+    
+    .reveal-hint {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      color: #5599ff;
+      font-size: 0.8rem;
+    }
+    
+    .note-box {
+      background: rgba(30, 0, 40, 0.6);
+      border-left: 3px solid #cc00ff;
+      padding: 1rem;
+      border-radius: 0 8px 8px 0;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+    
+    .footer-note {
+      text-align: center;
+      margin-top: 2rem;
+      font-size: 0.8rem;
+      color: #5599ff;
+    }
+    
+    .secret-hint {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      color: rgba(255, 255, 255, 0.2);
+      font-size: 0.8rem;
+    }
+    
+    .crypto-challenge {
+      background: rgba(30, 30, 60, 0.8);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+      border: 1px solid #cc00ff;
+    }
+    
+    .hash-display {
+      font-family: monospace;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 0.8rem;
+      border-radius: 5px;
+      word-break: break-all;
+      color: #ffcc66;
+      text-align: center;
+      margin: 1rem 0;
+    }
+    
+    .solution-form {
+      margin-top: 1rem;
+    }
+    
+    .form-control {
+      background: rgba(0, 0, 0, 0.5);
+      color: #00ffaa;
+      border: 1px solid #0066ff;
+    }
+    
+    .btn-crypto {
+      background: linear-gradient(to right, #cc00ff, #6600cc);
+      color: white;
+      border: none;
+      margin-top: 1rem;
+    }
+    
+    .highlight {
+      animation: highlight 2s ease-in-out;
+    }
+    
+    @keyframes highlight {
+      0% { background: rgba(0, 50, 100, 0.5); }
+      50% { background: rgba(0, 100, 200, 0.8); }
+      100% { background: rgba(0, 50, 100, 0.5); }
+    }
+  </style>
+</head>
+<body>
+  <div class="profile-container">
+    <div class="profile-header">
+      <img src="https://randomuser.me/api/portraits/men/32.jpg" class="profile-pic" alt="Elliot Alderson">
+      <div>
+        <h2>Elliot Alderson <span class="terminated-badge">TERMINATED</span></h2>
+        <p><i class="bi bi-code-slash"></i> Senior Security Engineer (2015-2022)</p>
+        <p><i class="bi bi-github"></i> ealderson | <i class="bi bi-envelope"></i> elliot.alderson@example.com</p>
+      </div>
+    </div>
+    
+    <div class="profile-content">
+      <div class="profile-section">
+        <h3><i class="bi bi-activity"></i> Recent Activity</h3>
+        <div class="activity-log">
+          <div class="log-entry">
+            <div class="log-timestamp">2022-11-14</div>
+            <div class="log-message">Added token hashing to auth system - <span style="color: #ff5555">Security issue flagged</span></div>
+          </div>
+          <div class="log-entry">
+            <div class="log-timestamp">2022-11-12</div>
+            <div class="log-message">Implemented custom hashing algorithm for tokens</div>
+          </div>
+          <div class="log-entry">
+            <div class="log-timestamp">2022-11-10</div>
+            <div class="log-message">Created token generation script</div>
+          </div>
+          <div class="log-entry">
+            <div class="log-timestamp">2022-11-08</div>
+            <div class="log-message">Documented token security practices</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="profile-section">
+        <h3><i class="bi bi-file-earmark-code"></i> Last Modified Configuration</h3>
+        <p>auth.js - Security module</p>
+        <div class="config-file">
+          <div><span class="line-number">1</span> const crypto = require('crypto');</div>
+          <div><span class="line-number">2</span> </div>
+          <div><span class="line-number">3</span> // Token hashing function - Elliot's custom algorithm</div>
+          <div><span class="line-number">4</span> function hashToken(token) {</div>
+          <div><span class="line-number">5</span>   let hash = '';</div>
+          <div><span class="line-number">6</span>   for (let i = 0; i < token.length; i++) {</div>
+          <div><span class="line-number">7</span>     const charCode = token.charCodeAt(i);</div>
+          <div><span class="line-number">8</span>     // Simple substitution cipher</div>
+          <div><span class="line-number">9</span>     hash += String.fromCharCode((charCode + 5) % 256);</div>
+          <div><span class="line-number">10</span>   }</div>
+          <div><span class="line-number">11</span>   return crypto.createHash('md5').update(hash).digest('hex');</div>
+          <div><span class="line-number">12</span> }</div>
+          <div><span class="line-number">13</span> </div>
+          <div class="token-line"><span class="line-number">14</span> const TEST_TOKEN_HASH = '<span class="token-value">a7d3b5c9e1f8d2b6c4a0d8e2f9c1b5d7</span>';</div>
+          <div><span class="line-number">15</span> </div>
+        </div>
+        <div class="reveal-hint">Hover over the hash to see it clearly</div>
+      </div>
+      
+      <!--<div class="crypto-challenge">
+        <h3><i class="bi bi-puzzle"></i> Token Recovery Challenge</h3>
+        <p>Elliot used a custom algorithm to protect tokens. To recover the original token:</p>
+        <ol>
+          <li>Apply the reverse of the substitution cipher (charCode - 5)</li>
+          <li>Then decode the MD5 hash: <span class="hash-display">a7d3b5c9e1f8d2b6c4a0d8e2f9c1b5d7</span></li>
+        </ol>
+        -->
+        <div class="solution-form">
+          <div class="mb-3">
+            <label class="form-label">Enter the recovered token:</label>
+            <input type="text" class="form-control" id="tokenInput" placeholder="bypass_alg_none">
+          </div>
+          <button class="btn btn-crypto" id="validateToken">Validate Token</button>
+          <div id="validationResult" class="mt-2"></div>
+        </div>
+      </div>
+    
+      <div class="profile-section">
+        <h3><i class="bi bi-exclamation-triangle"></i> Security Incident Report</h3>
+        <p><strong>Case #CTF-2022-007</strong> | Status: Closed</p>
+        <p>Employee committed hashed token to repository. The original token can be recovered using the custom algorithm.</p>
+        <p class="mt-3"><i class="bi bi-chat-quote"></i> "I thought the custom hashing would provide enough security. I was wrong." - Elliot Alderson</p>
+        
+        <div class="note-box">
+          <p><i class="bi bi-lightbulb"></i> <strong>Technical Note:</strong> The token is needed for the legacy system at <code>/jwt-reset</code>. MD5 hashes can be reversed with rainbow tables.</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="footer-note">
+      <p>⚠️ This profile is read-only. Last updated: 2022-11-15</p>
+      <p>Session Access Level: {{ session.get('access_stage', 0) }}</p>
+    </div>
+  </div>
+  
+  <script>
+    // Highlight the token line on page load
+    setTimeout(() => {
+      const tokenLine = document.querySelector('.token-line');
+      tokenLine.classList.add('highlight');
+      
+      setTimeout(() => {
+        tokenLine.classList.remove('highlight');
+      }, 2000);
+    }, 1000);
+    
+    // Token validation logic
+    document.getElementById('validateToken').addEventListener('click', function() {
+      const userInput = document.getElementById('tokenInput').value;
+      const resultDiv = document.getElementById('validationResult');
+      
+      // This is a simple client-side check - real CTF would verify server-side
+      if (userInput === 'bypass_alg_none') {
+        resultDiv.innerHTML = '<div class="alert alert-success"><i class="bi bi-check-circle"></i> Valid token! Use it at /jwt-reset</div>';
+        
+        // In a real CTF, you would set a session flag or similar
+        setTimeout(() => {
+          window.location.href = '/jwt-reset?token=' + encodeURIComponent(userInput);
+        }, 2000);
+      } else {
+        resultDiv.innerHTML = '<div class="alert alert-danger"><i class="bi bi-x-circle"></i> Invalid token. Try again.</div>';
+      }
+    });
+    
+    // Show hint after 3 failed attempts
+    let attempts = 0;
+    document.getElementById('validateToken').addEventListener('click', function() {
+      const userInput = document.getElementById('tokenInput').value;
+      if (userInput !== 'bypass_alg_none') {
+        attempts++;
+        if (attempts >= 3) {
+          document.getElementById('validationResult').innerHTML += 
+            '<div class="alert alert-info mt-2"><i class="bi bi-lightbulb"></i> Hint: The token is "bypass_alg_none"</div>';
+        }
+      }
+    });
+  </script>
+</body>
+</html>

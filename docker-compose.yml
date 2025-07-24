@@ -1,0 +1,25 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_DB: ctf_db
+      POSTGRES_USER: ctf_user
+      POSTGRES_PASSWORD: ctf_pass
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init_db.sql:/docker-entrypoint-initdb.d/init_db.sql:ro
+
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://ctf_user:ctf_pass@db:5432/ctf_db
+      SECRET_KEY: ultra_secret_123
+
+volumes:
+  pgdata:
