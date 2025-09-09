@@ -7,7 +7,7 @@ from Crypto.Cipher import ARC4
 crypto = Blueprint("crypto", __name__)
 
 # Configuration
-SECRET = b"/ssrf?url=http://internal:5000/"  # Hidden challenge hint
+SECRET = b"/ssrf?url=http://internal:5000/internal"  # Hidden challenge hint
 # Random RC4 key generated once per server start
 RC4_KEY = ''.join(random.sample(string.ascii_uppercase + string.digits, k=17)).encode()
 
